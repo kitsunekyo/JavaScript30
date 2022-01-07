@@ -81,24 +81,20 @@
     <script>
       (() => {
         const root = document.documentElement;
-        const blurEl = document.querySelector("#blur");
-        const spacingEl = document.querySelector("#spacing");
-        const baseEl = document.querySelector("#base");
+        const inputs = document.querySelectorAll("input");
+        
+        function watchInputProperty(inputEl) {
+          const propertyName = `--${inputEl.id}`;
+          const suffix = inputEl.dataset.sizing || "";
 
-        function updateProperty(name, value) {
-          root.style.setProperty(name, value);
-        }
+          root.style.setProperty(propertyName, inputEl.value + suffix);
 
-        function watchInputProperty(propertyName, inputEl, unit = '') {
-          updateProperty(propertyName, inputEl.value + unit);
           inputEl.addEventListener("input", (e) =>
-            updateProperty(propertyName, inputEl.value + unit)
+            root.style.setProperty(propertyName, e.target.value + suffix)
           );
         }
 
-        watchInputProperty("--blur", blurEl, "px");
-        watchInputProperty("--spacing", spacingEl, "px");
-        watchInputProperty("--base", baseEl);
+        inputs.forEach((input) => watchInputProperty(input));
       })();
     </script>
   </body>
