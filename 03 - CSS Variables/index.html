@@ -43,6 +43,9 @@
       /*
       misc styles, nothing to do with CSS variables
     */
+      * {
+        box-sizing: border-box;
+      }
 
       :root {
         --base: #ffc600;
@@ -51,6 +54,7 @@
       }
 
       img {
+        max-width: 100%;
         padding: var(--spacing);
         background-color: var(--base);
         filter: blur(var(--blur));
@@ -82,7 +86,7 @@
       (() => {
         const root = document.documentElement;
         const inputs = document.querySelectorAll("input");
-        
+
         function watchInputProperty(inputEl) {
           const propertyName = `--${inputEl.id}`;
           const suffix = inputEl.dataset.sizing || "";
