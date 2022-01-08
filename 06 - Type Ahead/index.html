@@ -26,29 +26,50 @@
         const searchEl = document.querySelector(".search");
         searchEl.addEventListener("input", handleSearchInput);
 
+        fetchCities().then((data) => (cities = data));
+
+        function filterCities(search) {
+          const regexp = new RegExp(search, "gi");
+          return (filteredCities = cities.filter(
+            (place) => place.city.match(regexp) || place.state.match(regexp)
+          ));
+        }
+
         function handleSearchInput(e) {
           const search = e.currentTarget.value;
-          const filteredCities = cities.filter((city) =>
-            city.city.includes(search)
-          );
+          const filteredCities = filterCities(search);
+          renderSuggestions(filteredCities, search);
+        }
 
+        function renderSuggestions(cities, search) {
           if (search === "") {
             suggestionsEl.innerHTML = suggestionsHintHtml;
           } else {
             suggestionsEl.innerHTML = filteredCities
-              .map((city) =>
-                renderSuggestion(city.city, city.state, city.population, search)
+              .map((place) =>
+                renderSuggestion(
+                  place.city,
+                  place.state,
+                  place.population,
+                  search
+                )
               )
               .join("");
           }
         }
 
+        function highlightMatch(value, search) {
+          const regexp = new RegExp(`(${search})`, "gi");
+          return value.replace(regexp, `<span class="hl">$1</span>`);
+        }
+
         function renderSuggestion(city, state, population, search) {
           return `<li>
-                    <span>${city.replace(
-                      search,
-                      `<span class="hl">${search}</span>`
-                    )}, ${state}
+                    <span>
+                      ${highlightMatch(city, search)}, ${highlightMatch(
+            state,
+            search
+          )}
                     </span>
                     <span class="population">
                       ${Number(population).toLocaleString()}
@@ -60,8 +81,6 @@
           const res = await fetch(endpoint);
           return await res.json();
         }
-
-        fetchCities().then((data) => (cities = data));
       })();
     </script>
   </body>
