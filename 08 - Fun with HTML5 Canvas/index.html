@@ -3,49 +3,142 @@
   <head>
     <meta charset="UTF-8" />
     <title>HTML5 Canvas</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      .canvas__container {
+        flex-grow: 1;
+        border: solid 5px #eee;
+      }
+      .brush-size__input {
+        width: 100px;
+      }
+      .brush-preview__wrapper {
+        height: 100px;
+        width: 100px;
+        border: solid 1px #ccc;
+        border-radius: 5px;
+        display: grid;
+        place-items: center;
+      }
+      .brush-preview {
+        border-radius: 50%;
+        background-color: #333;
+      }
+      .color__input {
+        width: 100px;
+        height: 100px;
+        display: block;
+        background: transparent;
+        border: solid 1px #eee;
+        border-radius: 5px;
+      }
+
+      .controls {
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+        padding: 2rem;
+        font-size: 0.8rem;
+      }
+    </style>
   </head>
   <body>
-    <canvas id="draw" width="800" height="800"></canvas>
+    <div class="controls">
+      <label for="brushSizeInput">
+        Brush Size
+        <div class="brush-preview__wrapper">
+          <div class="brush-preview"></div>
+        </div>
+        <input
+          type="range"
+          name="brushSizeInput"
+          id="brushSizeInput"
+          class="brush-size__input"
+          min="1"
+          max="100"
+          value="20"
+        />
+      </label>
+      <label for="colorInput">
+        Color
+        <input type="color" name="color" id="colorInput" class="color__input" />
+      </label>
+    </div>
+    <div class="canvas__container">
+      <canvas id="draw" width="600" height="380"></canvas>
+    </div>
     <script>
+      const brushPreviewEl = document.querySelector(".brush-preview");
+      const brushSizeInputEl = document.querySelector("#brushSizeInput");
+      const colorInputEl = document.querySelector("#colorInput");
+      const canvasContainerEl = document.querySelector(".canvas__container");
+
       const canvasEl = document.getElementById("draw");
       canvasEl.width = window.innerWidth;
-      canvasEl.height = window.innerHeight;
+      canvasEl.height = canvasContainerEl.clientHeight;
       const ctx = canvasEl.getContext("2d");
 
-      ctx.strokeStyle = "#BADA55";
+      function setupEvents() {
+        brushSizeInputEl.addEventListener("input", (e) =>
+          setBrushSize(ctx, e.currentTarget.value)
+        );
+        colorInputEl.addEventListener("input", (e) =>
+          setColor(ctx, e.currentTarget.value)
+        );
+        canvasEl.addEventListener("mousedown", (e) => {
+          lastX = e.offsetX;
+          lastY = e.offsetY;
+          isDrawing = true;
+        });
+        canvasEl.addEventListener("mouseup", () => (isDrawing = false));
+        canvasEl.addEventListener("mouseout", () => (isDrawing = false));
+        canvasEl.addEventListener("mousemove", draw);
+      }
+
+      function setColor(ctx, color) {
+        ctx.strokeStyle = color;
+      }
+
+      function setBrushSize(ctx, brushSize) {
+        brushPreviewEl.style.height = `${brushSize}px`;
+        brushPreviewEl.style.width = `${brushSize}px`;
+        ctx.lineWidth = brushSize;
+      }
+
+      setupEvents();
+
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
-      ctx.lineWidth = 10;
+      setBrushSize(ctx, brushSizeInputEl.value);
+      setColor(ctx, colorInputEl.value);
 
       let isDrawing = false;
       let lastX = 0;
       let lastY = 0;
       let hue = 0;
-      let direction = true;
 
       function draw(e) {
         if (!isDrawing) return;
-        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
         ctx.lineTo(e.offsetX, e.offsetY);
         ctx.stroke();
         lastX = e.offsetX;
         lastY = e.offsetY;
-        hue = hue <= 360 ? hue + 1 : 0;
-        if (ctx.lineWidth >= 50 || ctx.lineWidth < 10) {
-          direction = !direction;
-        }
-        ctx.lineWidth = direction ? ctx.lineWidth + 1 : ctx.lineWidth - 1;
       }
-      canvasEl.addEventListener("mousedown", (e) => {
-        lastX = e.offsetX;
-        lastY = e.offsetY;
-        isDrawing = true;
-      });
-      canvasEl.addEventListener("mouseup", () => (isDrawing = false));
-      canvasEl.addEventListener("mouseout", () => (isDrawing = false));
-      canvasEl.addEventListener("mousemove", draw);
     </script>
 
     <style>
